@@ -138,6 +138,9 @@ std::unique_ptr<SearchStopper> LegacyTimeManager::GetStopper(
     first_move_of_game_ = false;
   }
 
+  // Try to stay close to opponent's time usage (before smart pruning)
+  this_move_time += 0.8 * (!is_black) ? params.wtime - params.btime : params.btime - params.wtime
+
   // Only extend thinking time with slowmover if smart pruning can potentially
   // reduce it.
   constexpr int kSmartPruningToleranceMs = 200;
