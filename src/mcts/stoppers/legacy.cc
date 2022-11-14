@@ -139,7 +139,9 @@ std::unique_ptr<SearchStopper> LegacyTimeManager::GetStopper(
   }
 
   // Try to stay close to opponent's time usage (before smart pruning)
-  this_move_time += 0.8 * (!is_black) ? params.wtime - params.btime : params.btime - params.wtime
+  this_move_time += 0.2 * (!is_black)
+      ? (*params.wtime - *params.btime > 0 ? *params.wtime - *params.btime : 0
+         : (*params.btime - *params.wtime > 0) ? *params.btime - *params.wtime : 0;
 
   // Only extend thinking time with slowmover if smart pruning can potentially
   // reduce it.
