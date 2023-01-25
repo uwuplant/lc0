@@ -414,11 +414,11 @@ void SearchParams::Populate(OptionsParser* options) {
   options->Add<IntOption>(kDrawScoreBlackId, -100, 100) = 0;
   options->Add<FloatOption>(kWDLRescaleRatioId, 1e-6f, 1e6f) = 1.0f;
   options->Add<FloatOption>(kWDLRescaleDiffId, -100.0f, 100.0f) = 0.0f;
-  options->Add<FloatOption>(kWDLContemptId, -1000.0f, 1000.0f) = 0.0f;
-  options->Add<FloatOption>(kWDLContemptAttenuationId, -10.0f, 10.0f) = 1.0f;
-  options->Add<FloatOption>(kWDLEvalObjectivityId, 0.0f, 1.0f) = 1.0f;
-  options->Add<FloatOption>(kWDLDrawRateTargetId, 0.001f, 0.999f) = 0.5f;
-  options->Add<FloatOption>(kWDLDrawRateReferenceId, 0.001f, 0.999f) = 0.5f;
+  options->Add<FloatOption>(kWDLContemptId, -1000.0f, 1000.0f) = -80.0f;
+  options->Add<FloatOption>(kWDLContemptAttenuationId, -10.0f, 10.0f) = 0.6f;
+  options->Add<FloatOption>(kWDLEvalObjectivityId, 0.0f, 1.0f) = 0.0f;
+  options->Add<FloatOption>(kWDLDrawRateTargetId, 0.001f, 0.999f) = 0.9f;
+  options->Add<FloatOption>(kWDLDrawRateReferenceId, 0.001f, 0.999f) = 0.58f;
   options->Add<FloatOption>(kWDLBookExitBiasId, -2.0f, 2.0f) = 0.65f;
   options->Add<FloatOption>(kNpsLimitId, 0.0f, 1e6f) = 0.0f;
   options->Add<IntOption>(kTaskWorkersPerSearchWorkerId, 0, 128) =
