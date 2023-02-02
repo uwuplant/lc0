@@ -274,7 +274,7 @@ const OptionId SearchParams::kWDLRescaleDiffId{
     "wdl-rescale-diff", "WDLRescaleDiff",
     "Shifts the logistic WDL mean by diff in white's favor."};
 const OptionId SearchParams::kWDLContemptId{
-    "wdl-contempt", "UCI_RatingAdv",
+    "wdl-contempt", "WDLContempt",
     "The simulated rating advantage for the WDL conversion."};
 const OptionId SearchParams::kWDLContemptMaxValueId{
     "wdl-contempt-max-value", "WDLContemptMaxValue",
