@@ -31,6 +31,7 @@
 #include <cmath>
 
 #include "utils/exception.h"
+#include "utils/string.h"
 
 #if __has_include("params_override.h")
 #include "params_override.h"
@@ -347,9 +348,14 @@ const OptionId SearchParams::kMaxCollisionVisitsScalingEndId{
 const OptionId SearchParams::kMaxCollisionVisitsScalingPowerId{
     "max-collision-visits-scaling-power", "MaxCollisionVisitsScalingPower",
     "Power to apply to the interpolation between 1 and max to make it curved."};
-const OptionId SearchParams::kUCIOpponentId{"", "UCI_Opponent",
-                              "Option used by the GUI to pass the name and "
-                              "other information about the current opponent."};
+const OptionId SearchParams::kUCIOpponentId{
+    "", "UCI_Opponent",
+    "UCI option used by the GUI to pass the name and other information about "
+    "the current opponent."};
+const OptionId SearchParams::kUCIRatingAdvId{
+    "", "UCI_RatingAdv",
+    "UCI extension used by some GUIs to pass the estimated Elo difference from "
+    "the current opponent."};
 
 void SearchParams::Populate(OptionsParser* options) {
   // Here the uci optimized defaults" are set.
@@ -423,7 +429,8 @@ void SearchParams::Populate(OptionsParser* options) {
   options->Add<IntOption>(kDrawScoreBlackId, -100, 100) = 0;
   options->Add<FloatOption>(kWDLRescaleRatioId, 1e-6f, 1e6f) = 1.0f;
   options->Add<FloatOption>(kWDLRescaleDiffId, -100.0f, 100.0f) = 0.0f;
-  options->Add<FloatOption>(kWDLContemptId, -10000.0f, 10000.0f) = 0.0f;
+  options->Add<StringOption>(kWDLContemptId) =
+      "100,Stockfish=-50,Dragon=10,ethereal=60,Berserk=60";
   options->Add<FloatOption>(kWDLContemptMaxValueId, 0, 10000.0f) = 420.0f;
   options->Add<FloatOption>(kWDLCalibrationEloId, 0, 10000.0f) = 0.0f;
   options->Add<FloatOption>(kWDLContemptAttenuationId, -10.0f, 10.0f) = 1.0f;
@@ -442,6 +449,7 @@ void SearchParams::Populate(OptionsParser* options) {
   options->Add<IntOption>(kIdlingMinimumWorkId, 0, 10000) = 0;
   options->Add<IntOption>(kThreadIdlingThresholdId, 0, 128) = 1;
   options->Add<StringOption>(kUCIOpponentId);
+  options->Add<FloatOption>(kUCIRatingAdvId, -10000.0f, 10000.0f) = 0.0f;
 
   options->HideOption(kNoiseEpsilonId);
   options->HideOption(kNoiseAlphaId);
@@ -468,17 +476,6 @@ void SearchParams::Populate(OptionsParser* options) {
   options->HideOption(kWDLEvalObjectivityId);
   options->HideOption(kWDLDrawRateReferenceId);
   options->HideOption(kWDLBookExitBiasId);
-}
-
-namespace {
-float GetContempt(std::string name) {
-  if (name.find("Stockfish") != std::string::npos) return -50;
-  if (name.find("Dragon") != std::string::npos) return 10;
-  if (name.find("dragon") != std::string::npos) return 10;
-  if (name.find("Ethereal") != std::string::npos) return 60;
-  if (name.find("Berserk") != std::string::npos) return 60;
-  return 100;
-}
 }
 
 SearchParams::SearchParams(const OptionsDict& options)
@@ -558,6 +555,35 @@ SearchParams::SearchParams(const OptionsDict& options)
   kWDLRescaleRatio = options.Get<float>(kWDLRescaleRatioId);
   kWDLRescaleDiff = options.Get<float>(kWDLRescaleDiffId);
   if (kWDLRescaleRatio == 1.0 && kWDLRescaleDiff == 0.0) {
+    float contempt = 0;
+    if (!options.IsDefault<float>(kUCIRatingAdvId)) {
+      contempt = options.Get<float>(kUCIRatingAdvId);
+    } else {
+      auto name = options.Get<std::string>(kUCIOpponentId);
+      for (auto& entry :
+           StrSplit(options.Get<std::string>(kWDLContemptId), ",")) {
+        auto parts = StrSplit(entry, "=");
+        if (parts.size() == 1) {
+          try {
+            contempt = std::stof(parts[0]);
+          } catch (std::exception& e) {
+            throw Exception("Invalid default contempt: " + entry);
+          }
+        } else if (parts.size() == 2) {
+          if (name.find(parts[0]) != std::string::npos) {
+            try {
+              contempt = std::stof(parts[1]);
+            } catch (std::exception& e) {
+              throw Exception("Invalid contempt entry: " + entry);
+            }
+            break;
+          }
+        } else {
+          throw Exception("Invalid contempt entry:" + entry);
+        }
+      }
+    }
+
     if (options.Get<float>(kWDLCalibrationEloId) == 0) {
       // More accurate model, allowing book bias dependent Elo calculation.
       // Doesn't take lower accuracy of opponent into account and needs
@@ -582,7 +608,8 @@ SearchParams::SearchParams(const OptionsDict& options)
                                   scale_target),
                         2)) *
           std::log(10) / 200 *
-          GetContempt(options.Get<std::string>(kUCIOpponentId)) *
+          std::clamp(contempt, -options.Get<float>(kWDLContemptMaxValueId),
+                     options.Get<float>(kWDLContemptMaxValueId)) *
           options.Get<float>(kWDLContemptAttenuationId);
     } else {
       // Less accurate Elo model, but automatically chooses draw rate and
@@ -598,7 +625,9 @@ SearchParams::SearchParams(const OptionsDict& options)
                           (1.0f - options.Get<float>(kWDLDrawRateReferenceId)));
       float elo_active = options.Get<float>(kWDLCalibrationEloId);
       float elo_opp =
-          elo_active - GetContempt(options.Get<std::string>(kUCIOpponentId));
+          elo_active - std::clamp(contempt,
+                                  -options.Get<float>(kWDLContemptMaxValueId),
+                                  options.Get<float>(kWDLContemptMaxValueId));
       float scale_active = 1.0f / (1.0f / scale_zero +
                                    std::exp(elo_active / elo_slope - offset));
       float scale_opp =
