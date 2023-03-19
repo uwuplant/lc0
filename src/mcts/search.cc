@@ -2018,7 +2018,7 @@ void SearchWorker::FetchSingleNodeResult(NodeToProcess* node_to_process,
             params_.GetWDLRescaleDiff() != 0.0f) {
           float v = nn_eval->q;
           float d = nn_eval->d;
-          WDLRescale(v, d, params_.GetWDLRescaleRatio(),
+          WDLRescale(v, d, &mu_uci, params_.GetWDLRescaleRatio(),
                      params_.GetWDLRescaleDiff(), sign, false);
           nn_eval->q = v;
           nn_eval->d = d;
