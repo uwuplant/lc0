@@ -430,8 +430,7 @@ void SearchParams::Populate(OptionsParser* options) {
   options->Add<IntOption>(kDrawScoreBlackId, -100, 100) = 0;
   options->Add<FloatOption>(kWDLRescaleRatioId, 1e-6f, 1e6f) = 1.0f;
   options->Add<FloatOption>(kWDLRescaleDiffId, -100.0f, 100.0f) = 0.0f;
-  options->Add<StringOption>(kWDLContemptId) =
-      "100,Stockfish=-50,Dragon=10,ethereal=60,Berserk=60";
+  options->Add<StringOption>(kWDLContemptId) ="0";
   options->Add<FloatOption>(kWDLContemptMaxValueId, 0, 10000.0f) = 420.0f;
   options->Add<FloatOption>(kWDLCalibrationEloId, 0, 10000.0f) = 0.0f;
   options->Add<FloatOption>(kWDLContemptAttenuationId, -10.0f, 10.0f) = 1.0f;
