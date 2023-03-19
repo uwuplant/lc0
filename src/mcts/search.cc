@@ -201,8 +201,9 @@ void ApplyDirichletNoise(Node* node, float eps, double alpha) {
 
 namespace {
 // WDL conversion formula based on random walk model.
-inline void WDLRescale(float& v, float& d, float wdl_rescale_ratio,
-                       float wdl_rescale_diff, float sign, bool invert) {
+inline void WDLRescale(float& v, float& d, float* mu_uci,
+                       float wdl_rescale_ratio, float wdl_rescale_diff,
+                       float sign, bool invert) {
   if (invert) {
     wdl_rescale_diff = -wdl_rescale_diff;
     wdl_rescale_ratio = 1.0f / wdl_rescale_ratio;
@@ -222,12 +223,16 @@ inline void WDLRescale(float& v, float& d, float wdl_rescale_ratio,
     if (!invert) s = std::min(1.4f, s);
     auto mu = (a - b) / (a + b);
     auto s_new = s * wdl_rescale_ratio;
-    if (invert) std::swap(s, s_new);
+    if (invert) {
+      std::swap(s, s_new);
+      s = std::min(1.4f, s);
+    }
     auto mu_new = mu + sign * s * s * wdl_rescale_diff;
     auto w_new = FastLogistic((-1.0f + mu_new) / s_new);
     auto l_new = FastLogistic((-1.0f - mu_new) / s_new);
     v = w_new - l_new;
     d = std::max(0.0f, 1.0f - w_new - l_new);
+    if (mu_uci) *mu_uci = mu_new;
   }
 }
 }  // namespace
@@ -275,17 +280,17 @@ void Search::SendUciInfo() REQUIRES(nodes_mutex_) REQUIRES(counters_mutex_) {
     auto& uci_info = uci_infos.back();
     auto wl = edge.GetWL(default_wl);
     auto floatD = edge.GetD(default_d);
+    float mu_uci = 0.0f;
     auto wl_internal = wl;
     auto d_internal = floatD;
     // Only the diff effect is inverted, so we only need to call if diff != 0.
-    if (params_.GetPerspective() != "none" &&
-        params_.GetWDLRescaleDiff() != 0) {
+    if (params_.GetPerspective() != "none") {
       auto sign = (params_.GetPerspective() == "auto" ||
                    (params_.GetPerspective() == "black") ==
                        played_history_.Last().IsBlackToMove())
                       ? 1.0f
                       : -1.0f;
-      WDLRescale(wl, floatD, params_.GetWDLRescaleRatio(),
+      WDLRescale(wl, floatD, &mu_uci, params_.GetWDLRescaleRatio(),
                  params_.GetWDLRescaleDiff() * params_.GetWDLEvalObjectivity(),
                  sign, true);
     }
@@ -308,6 +313,9 @@ void Search::SendUciInfo() REQUIRES(nodes_mutex_) REQUIRES(counters_mutex_) {
       uci_info.score = q * 10000;
     } else if (score_type == "W-L") {
       uci_info.score = wl * 10000;
+    } else if (score_type == "WDL_mu") {
+      uci_info.score =
+          (mu_uci != 0.0f ? mu_uci * 100 : 90 * tan(1.5637541897 * wl));
     }
 
     auto w = std::max(
