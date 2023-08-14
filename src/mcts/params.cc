@@ -452,6 +452,9 @@ const OptionId SearchParams::kCpuctUtilityStdevPriorWeightId{
 const OptionId SearchParams::kSearchSpinBackoffId{
     "search-spin-backoff", "SearchSpinBackoff",
     "Enable backoff for the spin lock that acquires available searcher."};
+const OptionId SearchParams::kMoveRuleBucketingId{
+		"move-rule-bucketing", "MoveRuleBucketing",
+    "Whether to use move rule bucketing.", 'm'};
 
 void SearchParams::Populate(OptionsParser* options) {
   // Here the uci optimized defaults" are set.
@@ -550,6 +553,7 @@ void SearchParams::Populate(OptionsParser* options) {
   options->Add<FloatOption>(kCpuctUtilityStdevPriorWeightId, 0.0f, 10000.0f) =
       10.0f;
   options->Add<BoolOption>(kSearchSpinBackoffId) = false;
+  options->Add<BoolOption>(kMoveRuleBucketingId) = false;
 
   options->HideOption(kNoiseEpsilonId);
   options->HideOption(kNoiseAlphaId);
@@ -662,6 +666,7 @@ SearchParams::SearchParams(const OptionsDict& options)
       kCpuctUtilityStdevScale(options.Get<float>(kCpuctUtilityStdevScaleId)),
       kCpuctUtilityStdevPriorWeight(
           options.Get<float>(kCpuctUtilityStdevPriorWeightId)),
-      kSearchSpinBackoff(options_.Get<bool>(kSearchSpinBackoffId)) {}
+      kSearchSpinBackoff(options_.Get<bool>(kSearchSpinBackoffId)),
+      kMoveRuleBucketing( options.Get<bool>(kMoveRuleBucketingId)) {}
 
 }  // namespace lczero
