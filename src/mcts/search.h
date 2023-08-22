@@ -188,6 +188,7 @@ class Search {
   ThinkingInfo last_outputted_uci_info_ GUARDED_BY(nodes_mutex_);
   int64_t total_playouts_ GUARDED_BY(nodes_mutex_) = 0;
   int64_t total_low_nodes_ GUARDED_BY(nodes_mutex_) = 0;
+  int64_t total_nn_queries_ GUARDED_BY(nodes_mutex_) = 0;
   int64_t total_batches_ GUARDED_BY(nodes_mutex_) = 0;
   // Maximum search depth = length of longest path taken in PickNodetoExtend.
   uint16_t max_depth_ GUARDED_BY(nodes_mutex_) = 0;
@@ -298,7 +299,9 @@ class SearchWorker {
       return is_tt_hit || is_cache_hit || node->IsTerminal() ||
              node->GetLowNode();
     }
-    bool ShouldAddToInput() const { return nn_queried && !is_tt_hit && !is_comrade_hit; }
+    bool ShouldAddToInput() const {
+      return nn_queried && !is_tt_hit && !is_comrade_hit;
+    }
     int GetRule50Ply() const { return history.Last().GetRule50Ply(); }
 
     // The path to the node to extend.

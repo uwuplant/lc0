@@ -453,8 +453,13 @@ const OptionId SearchParams::kSearchSpinBackoffId{
     "search-spin-backoff", "SearchSpinBackoff",
     "Enable backoff for the spin lock that acquires available searcher."};
 const OptionId SearchParams::kMoveRuleBucketingId{
-		"move-rule-bucketing", "MoveRuleBucketing",
-    "Whether to use move rule bucketing.", 'm'};
+    "move-rule-bucketing", "MoveRuleBucketing",
+    "Whether to use move rule bucketing."};
+const OptionId SearchParams::kReportedNodesId{
+    "reported-nodes", "ReportedNodes",
+    "What to report as nodes/nps count. Default is "
+    "'nodes' for LowNodes. The other options are 'queries' for neural network"
+    "queries and 'playouts' or 'legacy' for the old value."};
 
 void SearchParams::Populate(OptionsParser* options) {
   // Here the uci optimized defaults" are set.
@@ -553,7 +558,10 @@ void SearchParams::Populate(OptionsParser* options) {
   options->Add<FloatOption>(kCpuctUtilityStdevPriorWeightId, 0.0f, 10000.0f) =
       10.0f;
   options->Add<BoolOption>(kSearchSpinBackoffId) = false;
-  options->Add<BoolOption>(kMoveRuleBucketingId) = false;
+  options->Add<BoolOption>(kMoveRuleBucketingId) = true;
+  std::vector<std::string> reported_nodes = {"nodes", "queries", "playouts",
+                                             "legacy"};
+  options->Add<ChoiceOption>(kReportedNodesId, reported_nodes) = "nodes";
 
   options->HideOption(kNoiseEpsilonId);
   options->HideOption(kNoiseAlphaId);
