@@ -216,6 +216,7 @@ struct NNEval {
   // 4 byte fields.
   float q = 0.0f;
   float d = 0.0f;
+  float e = 0.0f;
   float m = 0.0f;
 
   // 1 byte fields.
@@ -471,6 +472,7 @@ class LowNode {
         v_(p.v_),
         hash_(p.hash_),
         d_(p.d_),
+        e_(p.e_),
         m_(p.m_),
         vs_(p.vs_),
         num_edges_(p.num_edges_),
@@ -489,6 +491,7 @@ class LowNode {
         v_(p.v_),
         hash_(hash),
         d_(p.d_),
+        e_(p.e_),
         m_(p.m_),
         vs_(p.vs_),
         num_edges_(p.num_edges_),
@@ -529,6 +532,7 @@ class LowNode {
     wl_ = eval->q;
     v_ = eval->q;
     d_ = eval->d;
+    e_= eval->e;
     m_ = eval->m;
     vs_ = wl_ * wl_;
 
@@ -551,6 +555,7 @@ class LowNode {
   float GetWL() const { return wl_; }
   float GetV() const { return v_; }
   float GetD() const { return d_; }
+  float GetE() const { return e_; }
   float GetM() const { return m_; }
   float GetVS() const { return vs_; }
   float GetWeight() const { return weight_; }
@@ -665,6 +670,7 @@ class LowNode {
   float m_ = 0.0f;
   // original eval
   float v_ = 0.0f;
+  float e_ = 0.0f;
   // How many completed visits this node had.
   uint32_t n_ = 0;
 

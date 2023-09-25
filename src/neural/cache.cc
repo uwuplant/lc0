@@ -11,7 +11,7 @@
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-
+ge
   You should have received a copy of the GNU General Public License
   along with Leela Chess.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -106,6 +106,7 @@ void CachingComputation::ComputeBlocking(float softmax_temp) {
     item.eval->q = parent_->GetQVal(item.idx_in_parent);
     item.eval->d = parent_->GetDVal(item.idx_in_parent);
     item.eval->m = parent_->GetMVal(item.idx_in_parent);
+    item.eval->e = parent_->GetEVal(item.idx_in_parent);
 
     // Calculate maximum first.
     float max_p = -std::numeric_limits<float>::infinity();

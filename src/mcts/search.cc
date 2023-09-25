@@ -10,7 +10,7 @@
   Leela Chess is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU General Public Licweense for more details.
 
   You should have received a copy of the GNU General Public License
   along with Leela Chess.  If not, see <http://www.gnu.org/licenses/>.
@@ -2332,6 +2332,14 @@ void SearchWorker::DoBackupUpdateSingleNode(
   float d_delta = 0.0f;
   float m_delta = 0.0f;
   float vs_delta = 0.0f;
+  float avg_weight;
+
+  if (nl) {
+    avg_weight = nl->GetE() + 1e-6;
+    std::cout << avg_weight;
+  } else {
+    avg_weight = 1.0f;
+  }
 
   // Update the low node at the start of the backup path first, but only visit
   // it the first time that backup sees it.
@@ -2339,7 +2347,7 @@ void SearchWorker::DoBackupUpdateSingleNode(
     nl->FinalizeScoreUpdate(
         nl->GetWL(), nl->GetD(), nl->GetM(), nl->GetVS(),
         node_to_process.multivisit,
-        node_to_process.multivisit * node_to_process.avg_weight);
+        node_to_process.multivisit * avg_weight);
   }
 
   if (nr >= 2) {
@@ -2364,7 +2372,7 @@ void SearchWorker::DoBackupUpdateSingleNode(
        /* ++it in the body */) {
     n->FinalizeScoreUpdate(
         v, d, m, vs, node_to_process.multivisit,
-        node_to_process.multivisit * node_to_process.avg_weight);
+        node_to_process.multivisit * avg_weight);
     if (n_to_fix > 0 && !n->IsTerminal()) {
       // First part of the path might be never as it was removed and recreated.
       n_to_fix = std::min(n_to_fix, n->GetN());
@@ -2407,7 +2415,7 @@ void SearchWorker::DoBackupUpdateSingleNode(
     }
     pl->FinalizeScoreUpdate(
         v, d, m, vs, node_to_process.multivisit,
-        node_to_process.multivisit * node_to_process.avg_weight);
+        node_to_process.multivisit * avg_weight);
     if (n_to_fix > 0) {
       pl->AdjustForTerminal(v_delta, d_delta, m_delta, vs_delta, n_to_fix,
                             weight_to_fix);

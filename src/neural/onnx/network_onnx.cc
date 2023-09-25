@@ -65,6 +65,7 @@ class OnnxComputation : public NetworkComputation {
   void ComputeBlocking() override;
   float GetQVal(int sample) const override;
   float GetDVal(int sample) const override;
+  float GetEVal(int sample) const override;
   float GetPVal(int sample, int move_id) const override;
   float GetMVal(int sample) const override;
 
@@ -174,6 +175,13 @@ float OnnxComputation<DataType>::GetDVal(int sample) const {
   const auto& data = output_tensors_data_[network_->wdl_head_];
   return AsFloat(data[sample * 3 + 1]);
 }
+
+template <typename DataType>
+float OnnxComputation<DataType>::GetEVal(int sample) const {
+  return 0.0;
+}
+
+
 
 template <typename DataType>
 float OnnxComputation<DataType>::GetPVal(int sample, int move_id) const {

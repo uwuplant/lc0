@@ -311,7 +311,7 @@ class SearchWorker {
     uint32_t multivisit = 0;
     // If greater than multivisit, and other parameters don't imply a lower
     // limit, multivist could be increased to this value without additional
-    // change in outcome of next selection.
+    // change in outcome of next selection.w
     uint32_t maxvisit = 0;
     float avg_weight = 1.0f;
     bool nn_queried = false;
