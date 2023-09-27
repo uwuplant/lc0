@@ -2250,12 +2250,13 @@ void SearchWorker::DoBackupUpdate() {
 }
 
 bool SearchWorker::MaybeAdjustForTerminalOrTransposition(
-    Node* n, const LowNode* nl, float& v, float& d, float& m, float& vs,
+    Node* n, const LowNode* nl, float& v, float& d, float& e, float& m, float& vs,
     uint32_t& n_to_fix, float& weight_to_fix, float& v_delta, float& d_delta,
     float& m_delta, float& vs_delta, bool& update_parent_bounds) const {
   if (n->IsTerminal()) {
     v = n->GetWL();
     d = n->GetD();
+    e = n->GetE();
     m = n->GetM();
     vs = n->GetVS();
 
@@ -2269,6 +2270,7 @@ bool SearchWorker::MaybeAdjustForTerminalOrTransposition(
     // result and incrementing m.
     v = -nl->GetWL();
     d = nl->GetD();
+    e = nl->GetE();
     m = nl->GetM() + 1;
     vs = nl->GetVS();
     // When starting at or going through a transposition/terminal, make sure to
@@ -2277,6 +2279,7 @@ bool SearchWorker::MaybeAdjustForTerminalOrTransposition(
     weight_to_fix = n->GetWeight();
     v_delta = v - n->GetWL();
     d_delta = d - n->GetD();
+    e_delta = e - n->GetE();
     m_delta = m - n->GetM();
     vs_delta = vs - n->GetVS();
     // Update bounds.
@@ -2325,12 +2328,14 @@ void SearchWorker::DoBackupUpdateSingleNode(
   auto nl = n->GetLowNode();
   float v = 0.0f;
   float d = 0.0f;
+  float e = 0.0f;
   float m = 0.0f;
   float vs = v * v;
   uint32_t n_to_fix = 0;
   float weight_to_fix = 0.0f;
   float v_delta = 0.0f;
   float d_delta = 0.0f;
+  float e_delta = 0.0f;
   float m_delta = 0.0f;
   float vs_delta = 0.0f;
 
@@ -2338,7 +2343,7 @@ void SearchWorker::DoBackupUpdateSingleNode(
   // it the first time that backup sees it.
   if (nl && nl->GetN() == 0) {
     nl->FinalizeScoreUpdate(
-        nl->GetWL(), nl->GetD(), nl->GetM(), nl->GetVS(),
+        nl->GetWL(), nl->GetD(), nl->GetE(), nl->GetM(), nl->GetVS(),
         node_to_process.multivisit,
         node_to_process.multivisit * node_to_process.avg_weight);
   }
@@ -2351,11 +2356,12 @@ void SearchWorker::DoBackupUpdateSingleNode(
     d = 1.0f;
     m = 1;
   } else if (!MaybeAdjustForTerminalOrTransposition(
-                 n, nl, v, d, m, vs, n_to_fix, weight_to_fix, v_delta, d_delta,
+                 n, nl, v, d, e, m, vs, n_to_fix, weight_to_fix, v_delta, d_delta,
                  m_delta, vs_delta, update_parent_bounds)) {
     // If there is nothing better, use original NN values adjusted for node.
     v = -nl->GetWL();
     d = nl->GetD();
+    e = nl->GetE();
     m = nl->GetM() + 1;
     vs = nl->GetVS();
   }
@@ -2364,13 +2370,13 @@ void SearchWorker::DoBackupUpdateSingleNode(
   for (auto it = path.crbegin(); it != path.crend();
        /* ++it in the body */) {
     n->FinalizeScoreUpdate(
-        v, d, m, vs, node_to_process.multivisit,
+        v, d, e, m, vs, node_to_process.multivisit,
         node_to_process.multivisit * node_to_process.avg_weight);
     if (n_to_fix > 0 && !n->IsTerminal()) {
       // First part of the path might be never as it was removed and recreated.
       n_to_fix = std::min(n_to_fix, n->GetN());
       weight_to_fix = std::min(weight_to_fix, n->GetWeight());
-      n->AdjustForTerminal(v_delta, d_delta, m_delta, vs_delta, n_to_fix,
+      n->AdjustForTerminal(v_delta, d_delta, e_delta, m_delta, vs_delta, n_to_fix,
                            weight_to_fix);
     }
 
@@ -2401,16 +2407,17 @@ void SearchWorker::DoBackupUpdateSingleNode(
     if (pl->IsTerminal()) {
       v = pl->GetWL();
       d = pl->GetD();
+      e = pl->GetE();
       m = pl->GetM();
       vs = pl->GetVS();
       n_to_fix = 0;
       weight_to_fix = 0.0f;
     }
     pl->FinalizeScoreUpdate(
-        v, d, m, vs, node_to_process.multivisit,
+        v, d, e, m, vs, node_to_process.multivisit,
         node_to_process.multivisit * node_to_process.avg_weight);
     if (n_to_fix > 0) {
-      pl->AdjustForTerminal(v_delta, d_delta, m_delta, vs_delta, n_to_fix,
+      pl->AdjustForTerminal(v_delta, d_delta, e_delta, m_delta, vs_delta, n_to_fix,
                             weight_to_fix);
     }
 
@@ -2418,7 +2425,7 @@ void SearchWorker::DoBackupUpdateSingleNode(
     // Try setting parent bounds except the root or those already terminal.
     update_parent_bounds =
         update_parent_bounds && p != search_->root_node_ && !pl->IsTerminal() &&
-        MaybeSetBounds(p, m, &n_to_fix, &weight_to_fix, &v_delta, &d_delta,
+        MaybeSetBounds(p, m, &n_to_fix, &weight_to_fix, &v_delta, &d_delta, &e_delta,
                        &m_delta, &vs_delta);
 
     // Q will be flipped for opponent.
@@ -2427,7 +2434,7 @@ void SearchWorker::DoBackupUpdateSingleNode(
     m++;
 
     MaybeAdjustForTerminalOrTransposition(
-        p, pl, v, d, m, vs, n_to_fix, weight_to_fix, v_delta, d_delta, m_delta,
+        p, pl, v, d, e, m, vs, n_to_fix, weight_to_fix, v_delta, d_delta, m_delta,
         vs_delta, update_parent_bounds);
 
     // Update the stats.
@@ -2465,8 +2472,8 @@ void SearchWorker::DoBackupUpdateSingleNode(
 
 bool SearchWorker::MaybeSetBounds(Node* p, float m, uint32_t* n_to_fix,
                                   float* weight_to_fix, float* v_delta,
-                                  float* d_delta, float* m_delta,
-                                  float* vs_delta) const {
+                                  float* d_delta, float* e_delta,
+                                  float* m_delta, float* vs_delta) const {
   auto losing_m = 0.0f;
   auto prefer_tb = false;
 

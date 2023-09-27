@@ -297,6 +297,7 @@ class Node {
   // for terminal nodes.
   float GetWL() const { return wl_; }
   float GetD() const { return d_; }
+  float GetE() const { return e_; }
   float GetM() const { return m_; }
   float GetVS() const { return vs_; }
   float GetWeight() const { return weight_; }
@@ -330,10 +331,10 @@ class Node {
   // * Q (weighted average of all V in a subtree)
   // * N (+=multivisit)
   // * N-in-flight (-=multivisit)
-  void FinalizeScoreUpdate(float v, float d, float m, float vs,
+  void FinalizeScoreUpdate(float v, float d, float e, float m, float vs,
                            uint32_t multivisit, float multiweight);
   // Like FinalizeScoreUpdate, but it updates n existing visits by delta amount.
-  void AdjustForTerminal(float v, float d, float m, float vs,
+  void AdjustForTerminal(float v, float d, float e, float m, float vs,
                          uint32_t multivisit, float multiweight);
   // When search decides to treat one visit as several (in case of collisions
   // or visiting terminal nodes several times), it amplifies the visit by
@@ -411,6 +412,7 @@ class Node {
 
   // Value squared, used in computing variance.
   double vs_ = 0.0;
+  double e_ = 0.0f;
   // Weight of node for uncertainty weighting
   double weight_ = 0.0;
   // Averaged draw probability. Works similarly to WL, except that D is not
@@ -473,6 +475,7 @@ class LowNode {
         v_(p.v_),
         hash_(p.hash_),
         d_(p.d_),
+        e_(p.e_),
         m_(p.m_),
         vs_(p.vs_),
         num_edges_(p.num_edges_),
@@ -533,6 +536,7 @@ class LowNode {
     d_ = eval->d;
     m_ = eval->m;
     vs_ = wl_ * wl_;
+    e_ = eval->e;
     weight_ = eval->wgt;
 
     assert(WLDMInvariantsHold());
@@ -554,6 +558,7 @@ class LowNode {
   float GetWL() const { return wl_; }
   float GetV() const { return v_; }
   float GetD() const { return d_; }
+  float GetE() const { return e_; }
   float GetM() const { return m_; }
   float GetVS() const { return vs_; }
   float GetWeight() const { return weight_; }
@@ -582,10 +587,10 @@ class LowNode {
   // * Q (weighted average of all V in a subtree)
   // * N (+=multivisit)
   // * N-in-flight (-=multivisit)
-  void FinalizeScoreUpdate(float v, float d, float m, float vs,
+  void FinalizeScoreUpdate(float v, float d, float e, float m, float vs,
                            uint32_t multivisit, float multiweight);
   // Like FinalizeScoreUpdate, but it updates n existing visits by delta amount.
-  void AdjustForTerminal(float v, float d, float m, float vs,
+  void AdjustForTerminal(float v, float d, float e, float m, float vs,
                          uint32_t multivisit, float multiweight);
 
   // Deletes all children.
@@ -720,6 +725,9 @@ class EdgeAndNode {
   }
   float GetD(float default_d) const {
     return (node_ && node_->GetN() > 0) ? node_->GetD() : default_d;
+  }
+  float GetE(float default_e) const {
+    return (node_ && node_->GetN() > 0) ? node_->GetE() : default_e;
   }
   float GetM(float default_m) const {
     return (node_ && node_->GetN() > 0) ? node_->GetM() : default_m;
