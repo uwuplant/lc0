@@ -217,6 +217,7 @@ struct NNEval {
   float q = 0.0f;
   float d = 0.0f;
   float m = 0.0f;
+  float e = 0.0f;
 
   // 1 byte fields.
   // Number of edges in @edges.
