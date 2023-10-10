@@ -1696,7 +1696,7 @@ void SearchWorker::PickNodesToExtendTask(
 
   // These 3 are 'filled on demand'.
   std::array<float, 256> current_score;
-  std::array<float, 256> current_weightstarted;
+  std::array<double, 256> current_weightstarted;
   auto& cur_iters = workspace->cur_iters;
 
   Node::Iterator best_edge;
@@ -1828,7 +1828,7 @@ void SearchWorker::PickNodesToExtendTask(
             }
             current_weightstarted[idx] = cur_iters[idx].GetWeightStarted();
           }
-          float weightstarted = current_weightstarted[idx];
+          double weightstarted = current_weightstarted[idx];
           const float util = current_util[idx];
           if (idx > cache_filled_idx) {
             current_score[idx] =
@@ -1878,7 +1878,7 @@ void SearchWorker::PickNodesToExtendTask(
         if (second_best_edge) {
           int estimated_visits_to_change_best = std::numeric_limits<int>::max();
           if (best_without_u < second_best) {
-            const auto n1 = current_weightstarted[best_idx] + 1;
+            const float n1 = current_weightstarted[best_idx] + 1;
             estimated_visits_to_change_best = static_cast<int>(
                 std::max(1.0f, std::min(cur_iters[best_idx].GetP() * puct_mult /
                                                 (second_best - best_without_u) -
