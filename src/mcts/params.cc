@@ -456,20 +456,24 @@ const OptionId SearchParams::kReportedNodesId{
     "reported-nodes", "ReportedNodes",
     "What to report as nodes/nps count. Default is "
     "'nodes' for LowNodes. The other options are 'queries' for neural network"
-      "queries and 'playouts' or 'legacy' for the old value."};
+    "queries and 'playouts' or 'legacy' for the old value."};
 const OptionId SearchParams::kUncertaintyWeightingCapId{
     "uncertainty-weighting-cap", "UncertaintyWeightingCap",
-		"Cap for node weight from uncertainty weighting."};
-const OptionId SearchParams::kUncertaintyWeightingAlphaId{
-		"uncertainty-weighting-alpha", "UncertaintyWeightingAlpha",
-    "Alpha value for uncertainty weighting."};
-const OptionId SearchParams::kUncertaintyWeightingBetaId{
-    "uncertainty-weighting-beta", "UncertaintyWeightingBeta",
-		"Beta value for uncertainty weighting."};
+    "Cap for node weight from uncertainty weighting."};
+const OptionId SearchParams::kUncertaintyWeightingCoefficientId{
+    "uncertainty-weighting-coefficient", "UncertaintyWeightingCoefficient",
+    "Coefficient in the uncertainty weighting formula."};
+const OptionId SearchParams::kUncertaintyWeightingExponentId{
+    "uncertainty-weighting-exponent", "UncertaintyWeightingExponent",
+    "Exponent in the uncertainty weighting formula."};
+const OptionId SearchParams::kEasyEvalWeightDecayId{
+    "easy-eval-weight-decay", "EasyEvalWeightDecay",
+    "How much to decay the weight of positions that were easy to evaluate"
+    "(i.e., the low node or a twin of the low node already existed). [0, 1] "
+    "recommended."};
 const OptionId SearchParams::kSearchSpinBackoffId{
     "search-spin-backoff", "SearchSpinBackoff",
     "Enable backoff for the spin lock that acquires available searcher."};
-
 
 void SearchParams::Populate(OptionsParser* options) {
   // Here the uci optimized defaults" are set.
@@ -571,10 +575,12 @@ void SearchParams::Populate(OptionsParser* options) {
   std::vector<std::string> reported_nodes = {"nodes", "queries", "playouts",
                                              "legacy"};
   options->Add<ChoiceOption>(kReportedNodesId, reported_nodes) = "nodes";
-  options->Add<FloatOption>(kUncertaintyWeightingCapId, 0.0f, 10000.0f) =
-			2.0f;
-  options->Add<FloatOption>(kUncertaintyWeightingAlphaId, 0.0f, 100.0f) = 1.0f;
-  options->Add<FloatOption>(kUncertaintyWeightingBetaId, -10.0f, 0.0f) = -0.4f;
+  options->Add<FloatOption>(kUncertaintyWeightingCapId, 0.0f, 10000.0f) = 2.0f;
+  options->Add<FloatOption>(kUncertaintyWeightingCoefficientId, 0.0f, 100.0f) =
+      1.0f;
+  options->Add<FloatOption>(kUncertaintyWeightingExponentId, -10.0f, 0.0f) =
+      0.0f;
+  options->Add<FloatOption>(kEasyEvalWeightDecayId, 0.0f, 100.0f) = 1.0f;
   options->Add<BoolOption>(kSearchSpinBackoffId) = false;
 
   options->HideOption(kNoiseEpsilonId);
@@ -690,8 +696,13 @@ SearchParams::SearchParams(const OptionsDict& options)
           options.Get<float>(kCpuctUtilityStdevPriorWeightId)),
       kMoveRuleBucketing(options.Get<bool>(kMoveRuleBucketingId)),
       kUncertaintyWeightingCap(options.Get<float>(kUncertaintyWeightingCapId)),
-      kUncertaintyWeightingAlpha(options.Get<float>(kUncertaintyWeightingAlphaId)),
-      kUncertaintyWeightingBeta(options.Get<float>(kUncertaintyWeightingBetaId)),
+      kUncertaintyWeightingCoefficient(
+          options.Get<float>(kUncertaintyWeightingCoefficientId)),
+      kUncertaintyWeightingExponent(
+          options.Get<float>(kUncertaintyWeightingExponentId)),
+      kEasyEvalWeightDecay(options.Get<float>(kEasyEvalWeightDecayId)),
+      
+
       kSearchSpinBackoff(options_.Get<bool>(kSearchSpinBackoffId)) {}
 
 }  // namespace lczero

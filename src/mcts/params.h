@@ -166,11 +166,14 @@ class SearchParams {
   float GetUncertaintyWeightingCap() const {
 		return kUncertaintyWeightingCap;
 	}
-  float GetUncertaintyWeightingAlpha() const {
-    return kUncertaintyWeightingAlpha;
+  float GetUncertaintyWeightingCoefficient() const {
+    return kUncertaintyWeightingCoefficient;
   }
-  float GetUncertaintyWeightingBeta() const {
-    return kUncertaintyWeightingBeta;
+  float GetUncertaintyWeightingExponent() const {
+    return kUncertaintyWeightingExponent;
+  }
+  float GetEasyEvalWeightDecay() const {
+    return kEasyEvalWeightDecay;
   }
   bool GetSearchSpinBackoff() const { return kSearchSpinBackoff; }
 
@@ -248,8 +251,9 @@ class SearchParams {
   static const OptionId kMoveRuleBucketingId;
   static const OptionId kReportedNodesId;
   static const OptionId kUncertaintyWeightingCapId;
-  static const OptionId kUncertaintyWeightingAlphaId;
-  static const OptionId kUncertaintyWeightingBetaId;
+  static const OptionId kUncertaintyWeightingCoefficientId;
+  static const OptionId kUncertaintyWeightingExponentId;
+  static const OptionId kEasyEvalWeightDecayId;
   static const OptionId kSearchSpinBackoffId;
 
  private:
@@ -311,8 +315,9 @@ class SearchParams {
   const float kCpuctUtilityStdevPriorWeight;
   const bool kMoveRuleBucketing;
   const float kUncertaintyWeightingCap;
-  const float kUncertaintyWeightingAlpha;
-  const float kUncertaintyWeightingBeta;
+  const float kUncertaintyWeightingCoefficient;
+  const float kUncertaintyWeightingExponent;
+  const float kEasyEvalWeightDecay;
   const bool kSearchSpinBackoff;
 
 };
