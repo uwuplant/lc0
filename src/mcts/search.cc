@@ -293,7 +293,7 @@ void Search::SendUciInfo() REQUIRES(nodes_mutex_) REQUIRES(counters_mutex_) {
             std::chrono::steady_clock::now() - *nps_start_time_)
             .count();
     if (time_since_first_batch_ms > 0) {
-      common_info.nps = total_nodes * 1000 / time_since_first_batch_ms;
+      common_info.nps = total_playouts_ * 1000 / time_since_first_batch_ms;
     }
   }
   if (display_cache_usage) {
