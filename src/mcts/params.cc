@@ -695,7 +695,7 @@ void SearchParams::Populate(OptionsParser* options) {
 
 
   options->Add<BoolOption>(kSearchSpinBackoffId) = false;
-
+/*
   options->HideOption(kNoiseEpsilonId);
   options->HideOption(kNoiseAlphaId);
   options->HideOption(kLogLiveStatsId);
@@ -717,6 +717,7 @@ void SearchParams::Populate(OptionsParser* options) {
   options->HideOption(kWDLContemptAttenuationId);
   options->HideOption(kWDLDrawRateTargetId);
   options->HideOption(kWDLBookExitBiasId);
+*/
 }
 
 SearchParams::SearchParams(const OptionsDict& options)
