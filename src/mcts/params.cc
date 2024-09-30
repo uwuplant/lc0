@@ -807,12 +807,12 @@ SearchParams::SearchParams(const OptionsDict& options)
                     options.Get<float>(kWDLBookExitBiasId),
                     options.Get<float>(kContemptMaxValueId),
                     options.Get<float>(kWDLContemptAttenuationId))
-                kWDLMaxS(options.Get<float>(kWDLMaxSId)),
               : SimplifiedWDLRescaleParams(
                     kContempt, options.Get<float>(kWDLDrawRateReferenceId),
                     options.Get<float>(kWDLCalibrationEloId),
                     options.Get<float>(kContemptMaxValueId),
                     options.Get<float>(kWDLContemptAttenuationId))),
+      kWDLMaxS(options.Get<float>(kWDLMaxSId)),
       kWDLEvalObjectivity(options.Get<float>(kWDLEvalObjectivityId)),
       kMaxOutOfOrderEvals(std::max(
           1, static_cast<int>(options.Get<float>(kMaxOutOfOrderEvalsId) *
