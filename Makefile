@@ -3,5 +3,5 @@ ifndef EXE
 endif
 
 all:
-	./build.sh
+	meson build && ninja -C build
 	mv build/release/lc0 $(EXE)
