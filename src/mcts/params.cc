@@ -272,7 +272,7 @@ const OptionId SearchParams::kCacheHistoryLengthId{
 const OptionId SearchParams::kPolicySoftmaxTempId{
     "policy-softmax-temp", "PolicyTemperature",
     "Policy softmax temperature. Higher values make priors of move candidates "
-    "closer to each other, widening the search."}
+    "closer to each other, widening the search."};
 const OptionId SearchParams::kPolicyDecayExponentId{
     "policy-decay-exponent", "PolicyDecayExponent",
     "Policy decay exponent. Sets the exponent of the visit based policy decay "
